@@ -149,6 +149,19 @@
         border-color: #718096;
         color: #e2e8f0;
     }
+    html.dark-mode .task-goal-box {
+        background-color: #2d3748;
+        border-color: #63b3ed;
+    }
+    html.dark-mode .task-goal-box h3 {
+        color: #e2e8f0;
+    }
+    html.dark-mode .task-goal-box p {
+        color: #cbd5e0;
+    }
+    html.dark-mode .lesson-indicator {
+        color: #a0aec0;
+    }
 </style>
 </head>
 <body class="min-h-screen flex flex-col bg-gray-50">
@@ -202,14 +215,14 @@
 
                     <div id="lesson-content" class="flex-1 overflow-y-auto custom-scrollbar pr-2 text-gray-700">
                         <!-- Content will load here instantly -->
-                        <div id="initial-loading-message" class="text-center p-8 hidden">
-                            <svg id="loading-spinner" class="animate-spin h-8 w-8 text-blue-600 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                            <p class="text-lg font-semibold">Generating adaptive content...</p>
-                            <p class="text-sm text-gray-500">The AI tutor is customizing your next lesson.</p>
-                        </div>
+                    </div>
+                    <div id="initial-loading-message" class="text-center p-8 hidden">
+                        <svg id="loading-spinner" class="animate-spin h-8 w-8 text-blue-600 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <p id="loading-message-text" class="text-lg font-semibold">Generating adaptive content...</p>
+                        <p class="text-sm text-gray-500">The AI tutor is customizing your next lesson.</p>
                     </div>
                     
                     <!-- New TTS/Read Aloud Controls -->
@@ -323,6 +336,8 @@ DIFFICULTY: Beginner
             currentPhaseIndex: 0,
             currentLessonId: 'P01L01',
             completedLessons: [],
+            phaseLessons: {},
+            expandedPhases: [],
             // 'lessonData' stores the structured content from the LLM/Hardcoded lesson
             lessonData: {
                 title: 'Welcome',
@@ -407,21 +422,15 @@ DIFFICULTY: Beginner
 
         // Show/Hide Loading Indicator
         function toggleLoading(isLoading, message = "Processing with AI...") {
-            const spinner = elements.loadingSpinner;
             const messageEl = elements.initialLoadingMessage;
+            const lessonContent = elements.lessonContent;
+            const loadingMessageText = document.getElementById('loading-message-text');
             
             if (isLoading) {
                 // Show AI generation message
+                lessonContent.classList.add('hidden');
                 messageEl.classList.remove('hidden');
-                elements.lessonContent.innerHTML = ''; // Clear content for loading message
-                messageEl.innerHTML = `
-                    <svg class="animate-spin h-8 w-8 text-blue-600 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    <p class="text-lg font-semibold">${message}</p>
-                    <p class="text-sm text-gray-500">The AI tutor is customizing your next lesson.</p>
-                `;
+                loadingMessageText.textContent = message;
                 
                 // Disable controls while loading
                 elements.runCodeBtn.disabled = true;
@@ -434,6 +443,7 @@ DIFFICULTY: Beginner
             } else {
                 // Hide loading message
                 messageEl.classList.add('hidden');
+                lessonContent.classList.remove('hidden');
                 
                 // Enable controls only if content is loaded (and not Phase 6 waiting for modal input)
                 if (courseState.lessonData.task && courseState.currentPhaseIndex !== 5) {
@@ -518,6 +528,8 @@ DIFFICULTY: Beginner
             if (courseState.currentLessonId === 'P01L01') {
                 const data = parseLessonContent(INITIAL_LESSON_MARKDOWN);
                 courseState.lessonData = data;
+                courseState.currentLessonId = 'P01L01';
+                courseState.currentPhaseIndex = 0;
             }
             
             refreshCourseUI();
@@ -555,6 +567,8 @@ DIFFICULTY: Beginner
                     // Instant load for the very first time
                     const data = parseLessonContent(INITIAL_LESSON_MARKDOWN);
                     courseState.lessonData = data;
+                    courseState.currentLessonId = 'P01L01';
+                    courseState.currentPhaseIndex = 0;
                     renderLesson(data);
                     
                     // Initialize and save the new progress document
@@ -663,7 +677,7 @@ DIFFICULTY: Beginner
             const data = {};
             const sections = {
                 'title': /#\s*(.+)/i,
-                'task': /##\s*TASK:(.+)/i,
+                'task': /##\s*TASK:([\s\S]*?)```python/i,
                 'explanation': /##\s*EXPLANATION:([\s\S]*?)##\s*TASK:/i,
                 'startCode': /```python\n([\s\S]*?)```/i,
                 'nextLessonId': /NEXT_ID:\s*(\w+)/i,
@@ -684,10 +698,24 @@ DIFFICULTY: Beginner
             return data;
         }
 
+        const lessonCache = {};
+
         // Request new content from the LLM based on current state
         async function fetchLesson(lessonId) {
             if (!isAuthReady) {
                 setTimeout(() => fetchLesson(lessonId), 500);
+                return;
+            }
+
+            // Check cache first
+            if (lessonCache[lessonId]) {
+                const data = lessonCache[lessonId];
+                courseState.lessonData = data;
+                const [currentPhase, currentLesson] = lessonId.split('L');
+                const phaseIndex = parseInt(currentPhase.replace('P', '')) - 1;
+                courseState.currentPhaseIndex = phaseIndex;
+                courseState.currentLessonId = lessonId;
+                renderLesson(data);
                 return;
             }
             
@@ -695,6 +723,9 @@ DIFFICULTY: Beginner
             if (lessonId === 'P01L01' && !courseState.completedLessons.includes('P01L01')) {
                 const data = parseLessonContent(INITIAL_LESSON_MARKDOWN);
                 courseState.lessonData = data;
+                courseState.currentLessonId = 'P01L01';
+                courseState.currentPhaseIndex = 0;
+                lessonCache[lessonId] = data; // Cache the initial lesson
                 renderLesson(data);
                 return;
             }
@@ -734,6 +765,9 @@ DIFFICULTY: Beginner
                 const response = await callGemini(systemInstruction, userQuery);
                 const data = parseLessonContent(response.text);
                 
+                // Cache the new lesson
+                lessonCache[lessonId] = data;
+
                 // Update state and UI
                 courseState.currentPhaseIndex = phaseIndex;
                 courseState.currentLessonId = lessonId;
@@ -760,7 +794,7 @@ DIFFICULTY: Beginner
         function renderLesson(data) {
             elements.lessonTitle.textContent = `${courseState.currentLessonId}: ${data.title}`;
             elements.lessonContent.innerHTML = markdownToHtml(data.explanation);
-            elements.lessonContent.innerHTML += `<div class="mt-6 p-4 bg-gray-100 border-l-4 border-blue-500 rounded-lg">
+            elements.lessonContent.innerHTML += `<div class="task-goal-box mt-6 p-4 bg-gray-100 border-l-4 border-blue-500 rounded-lg">
                 <h3 class="font-bold text-lg text-gray-800">🎯 Task Goal:</h3>
                 <p class="text-gray-700 mt-2">${data.task}</p>
             </div>`;
@@ -780,6 +814,61 @@ DIFFICULTY: Beginner
             refreshCourseUI();
         }
 
+        function renderLockedLesson(lessonId) {
+            const lesson = courseState.phaseLessons[lessonId.substring(0, 3)].find(l => l.lessonId === lessonId);
+            elements.lessonTitle.textContent = `${lessonId}: ${lesson.title}`;
+            elements.lessonContent.innerHTML = `<p class="text-red-500 font-semibold">Please finish the previous lesson first.</p>`;
+            
+            elements.codeEditor.value = '';
+            elements.codeEditor.disabled = true;
+            elements.runCodeBtn.disabled = true;
+            elements.submitBtn.disabled = true;
+            elements.hintBtn.disabled = true;
+            elements.analogyBtn.disabled = true;
+            elements.readAloudBtn.disabled = true;
+        }
+
+        async function fetchPhaseLessons(phaseId) {
+            const phaseIndex = parseInt(phaseId.replace('P', '')) - 1;
+            const phaseName = PHASES[phaseIndex];
+
+            const systemInstruction = `You are a curriculum designer. Generate a list of lesson titles and IDs for a given phase of a Python course. The output should be a JSON array of objects, where each object has a 'lessonId' and 'title' property.`;
+            
+            const userQuery = `Generate a list of lesson titles and IDs for Phase ${phaseIndex + 1}: ${phaseName}.\n            The lesson IDs should follow the format PXXLYY, where XX is the phase number and YY is the lesson number.\n            For example, for Phase 1, the lesson IDs should be P01L01, P01L02, etc.\n            Provide at least 5 lessons for the phase.\n            The output should be a valid JSON array.`;
+
+            try {
+                const response = await callGemini(systemInstruction, userQuery);
+                const jsonMatch = response.text.match(/```json\n([\s\S]*?)\n```/);
+                if (jsonMatch && jsonMatch[1]) {
+                    const lessons = JSON.parse(jsonMatch[1]);
+                    courseState.phaseLessons[phaseId] = lessons;
+                    refreshCourseUI();
+                } else {
+                    throw new Error("Invalid JSON response from AI.");
+                }
+            } catch (error) {
+                console.error('Error fetching phase lessons:', error);
+                // Handle error, e.g., show a message to the user
+            }
+        }
+
+        async function togglePhase(phaseId) {
+            const phaseIndex = parseInt(phaseId.replace('P', '')) - 1;
+            if (courseState.expandedPhases.includes(phaseId)) {
+                // Collapse the phase
+                courseState.expandedPhases = courseState.expandedPhases.filter(id => id !== phaseId);
+                refreshCourseUI();
+            } else {
+                // Expand the phase
+                courseState.expandedPhases.push(phaseId);
+                if (!courseState.phaseLessons[phaseId]) {
+                    await fetchPhaseLessons(phaseId);
+                } else {
+                    refreshCourseUI();
+                }
+            }
+        }
+
         // Regenerate the sidebar navigation based on current state
         function refreshCourseUI() {
             elements.coursePhases.innerHTML = '';
@@ -787,37 +876,70 @@ DIFFICULTY: Beginner
                 const phaseEl = document.createElement('div');
                 const phaseId = `P0${index + 1}`;
                 const isActivePhase = index === courseState.currentPhaseIndex;
+                const isExpanded = courseState.expandedPhases.includes(phaseId);
                 
-                // Determine which lesson ID to load when clicking the phase header (always PxxL01)
-                const targetLessonId = phaseId + 'L01';
-                
-                // Apply conditional light mode styling to sidebar items
                 const phaseClasses = isActivePhase 
                     ? 'bg-blue-100 font-bold text-blue-800 border-l-4 border-blue-500' 
-                    : 'text-gray-700 hover:bg-gray-100';
+                    : 'text-gray-700 hover:bg-gray-100 cursor-pointer';
+
+                let lessonsHTML = '';
+                if (isExpanded && courseState.phaseLessons[phaseId]) {
+                    lessonsHTML = '<div class="ml-4 mt-1 space-y-1">';
+                    courseState.phaseLessons[phaseId].forEach(lesson => {
+                        const isCompleted = courseState.completedLessons.includes(lesson.lessonId);
+                        const isCurrentLesson = lesson.lessonId === courseState.currentLessonId;
+                        const previousLessonIndex = parseInt(lesson.lessonId.substring(4)) - 2;
+                        const previousLessonId = phaseId + 'L' + ('0' + (previousLessonIndex + 1)).slice(-2);
+                        const isPreviousLessonCompleted = previousLessonIndex < 0 || courseState.completedLessons.includes(previousLessonId);
+                        const isAccessible = isCompleted || isCurrentLesson || isPreviousLessonCompleted;
+
+                        let lessonClasses = 'text-gray-500';
+                        if (isAccessible) {
+                            lessonClasses = 'text-gray-700 hover:text-gray-900 cursor-pointer';
+                        }
+                        if (isCurrentLesson) {
+                            lessonClasses = 'font-bold text-blue-600';
+                        }
+
+                        const lessonNumber = lesson.lessonId.substring(4);
+                        lessonsHTML += `
+                            <div class="cursor-pointer p-1 rounded-md ${lessonClasses}" data-lesson-id="${lesson.lessonId}" data-accessible="${isAccessible}">
+                                <div class="font-semibold text-xs">Lesson ${lessonNumber}</div>
+                                <div class="text-xs text-gray-500">${lesson.title} ${isCompleted ? '✅' : ''}</div>
+                            </div>
+                        `;
+                    });
+                    lessonsHTML += '</div>';
+                }
 
                 phaseEl.innerHTML = `
-                    <div class="cursor-pointer p-2 rounded-lg transition duration-150 ${phaseClasses}" 
-                         data-lesson-id="${targetLessonId}">
+                    <div class="p-2 rounded-lg transition duration-150 ${phaseClasses}" 
+                         data-phase-id="${phaseId}">
                         ${phaseName}
                     </div>
+                    ${lessonsHTML}
                 `;
                 elements.coursePhases.appendChild(phaseEl);
             });
             
-            // Re-attach click listeners
-            elements.coursePhases.querySelectorAll('div[data-lesson-id]').forEach(el => {
+            // Re-attach click listeners for phases
+            elements.coursePhases.querySelectorAll('div[data-phase-id]').forEach(el => {
                 el.addEventListener('click', () => {
-                    const lessonId = el.getAttribute('data-lesson-id');
-                    // If clicking the current lesson/phase button, try to load the next lesson
-                    if (lessonId === courseState.currentLessonId.substring(0, 4) + 'L01' && courseState.currentLessonId !== 'P01L01') {
-                         fetchLesson(courseState.lessonData.nextLessonId);
-                    } else {
-                        // Otherwise, load the first lesson of the clicked phase (will use AI for P01L02+)
+                    const phaseId = el.dataset.phaseId;
+                    togglePhase(phaseId);
+                });
+            });
+
+            // Re-attach click listeners for lessons
+            elements.coursePhases.querySelectorAll('div[data-lesson-id]').forEach(el => {
+                el.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const lessonId = el.dataset.lessonId;
+                    const isAccessible = el.dataset.accessible === 'true';
+                    if (isAccessible) {
                         fetchLesson(lessonId);
-                    }
-                    if (window.innerWidth < 768) {
-                        elements.sidebar.classList.add('-translate-x-full');
+                    } else {
+                        renderLockedLesson(lessonId);
                     }
                 });
             });
