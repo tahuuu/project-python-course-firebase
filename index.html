@@ -844,7 +844,10 @@ DIFFICULTY: Beginner
                     courseState.phaseLessons[phaseId] = lessons;
                     refreshCourseUI();
                 } else {
-                    throw new Error("Invalid JSON response from AI.");
+                    // try parsing directly
+                    const lessons = JSON.parse(response.text);
+                    courseState.phaseLessons[phaseId] = lessons;
+                    refreshCourseUI();
                 }
             } catch (error) {
                 console.error('Error fetching phase lessons:', error);
@@ -888,9 +891,10 @@ DIFFICULTY: Beginner
                     courseState.phaseLessons[phaseId].forEach(lesson => {
                         const isCompleted = courseState.completedLessons.includes(lesson.lessonId);
                         const isCurrentLesson = lesson.lessonId === courseState.currentLessonId;
-                        const previousLessonIndex = parseInt(lesson.lessonId.substring(4)) - 2;
-                        const previousLessonId = phaseId + 'L' + ('0' + (previousLessonIndex + 1)).slice(-2);
-                        const isPreviousLessonCompleted = previousLessonIndex < 0 || courseState.completedLessons.includes(previousLessonId);
+                        const lessonNumber = parseInt(lesson.lessonId.substring(4));
+                        const previousLessonId = phaseId + 'L' + ('0' + (lessonNumber - 1)).slice(-2);
+                        const isFirstLesson = lessonNumber === 1;
+                        const isPreviousLessonCompleted = isFirstLesson || courseState.completedLessons.includes(previousLessonId);
                         const isAccessible = isCompleted || isCurrentLesson || isPreviousLessonCompleted;
 
                         let lessonClasses = 'text-gray-500';
@@ -901,10 +905,9 @@ DIFFICULTY: Beginner
                             lessonClasses = 'font-bold text-blue-600';
                         }
 
-                        const lessonNumber = lesson.lessonId.substring(4);
                         lessonsHTML += `
-                            <div class="cursor-pointer p-1 rounded-md ${lessonClasses}" data-lesson-id="${lesson.lessonId}" data-accessible="${isAccessible}">
-                                <div class="font-semibold text-xs">Lesson ${lessonNumber}</div>
+                            <div class="p-1 rounded-md ${lessonClasses}" data-lesson-id="${lesson.lessonId}" data-accessible="${isAccessible}">
+                                <div class="font-semibold text-xs">Lesson ${lesson.lessonId.substring(4)}</div>
                                 <div class="text-xs text-gray-500">${lesson.title} ${isCompleted ? '✅' : ''}</div>
                             </div>
                         `;
