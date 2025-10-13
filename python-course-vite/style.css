@@ -1,0 +1,127 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+body {
+    font-family: 'Inter', sans-serif;
+    /* Default to light mode background */
+}
+/* Custom scrollbar style for the content and code editor */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background-color: #f1f5f9;
+}
+/* Style for rendered markdown content - Light Mode Only */
+#lesson-content h1 { font-size: 1.75rem; font-weight: 700; margin-top: 1.5rem; margin-bottom: 0.75rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; }
+#lesson-content h2 { font-size: 1.5rem; font-weight: 600; margin-top: 1.25rem; margin-bottom: 0.6rem; color: #1e3a8a; }
+#lesson-content pre { background-color: #1f2937; color: #f9fafb; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; margin: 1rem 0; }
+#lesson-content code { background-color: #e5e7eb; padding: 2px 4px; border-radius: 4px; font-family: monospace; }
+#lesson-content p { margin-bottom: 0.75rem; line-height: 1.6; }
+#lesson-content ul, #lesson-content ol { margin-left: 1.5rem; list-style-type: disc; margin-bottom: 1rem; }
+
+/* Custom style for the fixed sidebar */
+.sidebar {
+    transition: width 0.3s ease;
+}
+
+html.dark-mode body {
+    background-color: #1a202c;
+    color: #cbd5e0;
+}
+html.dark-mode #sidebar {
+    background-color: #2d3748;
+    border-color: #4a5568;
+}
+html.dark-mode h1, html.dark-mode h2, html.dark-mode h3 {
+    color: #e2e8f0;
+}
+html.dark-mode #user-info {
+    color: #a0aec0;
+    border-color: #4a5568;
+}
+html.dark-mode #course-phases .text-gray-700 {
+    color: #a0aec0;
+}
+html.dark-mode #course-phases .hover\:bg-gray-100:hover {
+    background-color: #4a5568;
+}
+html.dark-mode #course-phases .bg-blue-100 {
+    background-color: #2b6cb0;
+}
+html.dark-mode #course-phases .text-blue-800 {
+    color: #bee3f8;
+}
+html.dark-mode #course-phases .border-blue-500 {
+    border-color: #63b3ed;
+}
+html.dark-mode main {
+    color: #e2e8f0;
+}
+html.dark-mode section {
+    background-color: #2d3748;
+}
+html.dark-mode #lesson-content {
+    color: #cbd5e0;
+}
+html.dark-mode #lesson-content h1 {
+    border-bottom-color: #4a5568;
+}
+html.dark-mode #lesson-content h2 {
+    color: #90cdf4;
+}
+html.dark-mode #lesson-content code {
+    background-color: #4a5568;
+    color: #e2e8f0;
+}
+html.dark-mode #initial-loading-message p:last-child {
+    color: #a0aec0;
+}
+html.dark-mode #tts-controls {
+    background-color: #4a5568;
+    border-color: #718096;
+}
+html.dark-mode textarea {
+    background-color: #4a5568;
+    border-color: #718096;
+    color: #e2e8f0;
+}
+html.dark-mode pre {
+    background-color: #1a202c;
+    color: #9ae6b4;
+}
+html.dark-mode #ai-mentor-box {
+    background-color: #2b6cb0;
+    border-color: #63b3ed;
+    color: #bee3f8;
+}
+html.dark-mode #prompt-modal > div {
+    background-color: #2d3748;
+}
+html.dark-mode #modal-title {
+    color: #90cdf4;
+}
+html.dark-mode #modal-description {
+    color: #a0aec0;
+}
+html.dark-mode #modal-input {
+    background-color: #4a5568;
+    border-color: #718096;
+    color: #e2e8f0;
+}
+html.dark-mode .task-goal-box {
+    background-color: #2d3748;
+    border-color: #63b3ed;
+}
+html.dark-mode .task-goal-box h3 {
+    color: #e2e8f0;
+}
+html.dark-mode .task-goal-box p {
+    color: #cbd5e0;
+}
+html.dark-mode .lesson-indicator {
+    color: #a0aec0;
+}

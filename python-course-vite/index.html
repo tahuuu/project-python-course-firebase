@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI-Powered Adaptive Python Course</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/style.css" />
+    <script>
+        if (localStorage.getItem('theme') === 'dark') {
+            document.documentElement.classList.add('dark-mode');
+        }
+    </script>
+  </head>
+  <body class="min-h-screen flex flex-col bg-gray-50">
+
+    <!-- Main Application Container -->
+    <div id="app" class="flex flex-1 overflow-hidden">
+        <!-- Sidebar for Navigation -->
+        <aside id="sidebar" class="sidebar bg-white w-64 p-4 flex flex-col border-r border-gray-200 shadow-lg transition-transform duration-300 ease-in-out md:translate-x-0 absolute md:relative z-20 h-full -translate-x-full">
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-xl font-bold text-blue-800">Python 🚀 AI Tutor</h1>
+                                <button id="theme-toggle-btn" class="p-2 rounded-full hover:bg-gray-200">
+                    <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+                    <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.707.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM10 18a1 1 0 01-1-1v-1a1 1 0 112 0v1a1 1 0 01-1 1zM5.05 14.95a1 1 0 01-1.414 0l-.707-.707a1 1 0 011.414-1.414l.707.707a1 1 0 010 1.414zM5 10a1 1 0 01-1-1H3a1 1 0 110-2h1a1 1 0 112 0 1 1 0 01-1 1zm10-1a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM3.536 6.464a1 1 0 010-1.414l.707-.707a1 1 0 111.414 1.414l-.707.707a1 1 0 01-1.414 0zm10.607 0a1 1 0 011.414 0l.707.707a1 1 0 11-1.414 1.414l-.707-.707a1 1 0 010-1.414z"></path></svg>
+                </button>
+            </div>
+            
+            <div id="user-info" class="text-sm text-gray-600 mb-4 border-b pb-4 border-gray-200">
+                <p>Status: <span id="auth-status" class="font-semibold text-red-500">Connecting...</span></p>
+                <p class="truncate">User ID: <span id="display-user-id" class="font-mono text-xs"></span></p>
+            </div>
+
+            <h2 class="text-lg font-semibold text-gray-700 mb-2">Adaptive Path</h2>            <div id="course-phases" class="space-y-2 flex-1 overflow-y-auto custom-scrollbar">
+                <!-- Phases will be dynamically added here -->
+                <div class="animate-pulse space-y-2" id="phase-loading-placeholder">
+                    <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+                    <div class="h-4 bg-gray-200 rounded w-full"></div>
+                    <div class="h-4 bg-gray-200 rounded w-1/2"></div>
+                </div>
+            </div>
+
+            <button id="toggle-sidebar" class="md:hidden absolute top-4 -right-10 bg-blue-600 text-white p-2 rounded-r-lg shadow-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                </svg>
+            </button>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 flex flex-col overflow-y-auto custom-scrollbar p-6 text-gray-900">
+            <div id="content-container" class="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6 pb-6">
+                <!-- Lesson/Explanation Panel -->
+                <section class="bg-white p-6 rounded-xl shadow-lg flex flex-col">
+                    
+                    <!-- Lesson Header and New Analogy Button -->
+                    <div class="flex justify-between items-center mb-4 border-b pb-2 border-gray-200">
+                        <h2 class="text-xl font-bold text-gray-800">AI Lesson: <span id="lesson-title">Initializing...</span></h2>
+                        <button id="analogy-btn" class="py-2 px-3 bg-indigo-600 text-white font-bold rounded-lg shadow-md hover:bg-indigo-700 transition duration-150 disabled:bg-indigo-300 flex items-center text-sm" disabled>
+                            ✨ Analogy
+                        </button>
+                    </div>
+
+                    <div id="lesson-content" class="flex-1 overflow-y-auto custom-scrollbar pr-2 text-gray-700">
+                        <!-- Content will load here instantly -->
+                    </div>
+                    <div id="initial-loading-message" class="text-center p-8 hidden">
+                        <svg id="loading-spinner" class="animate-spin h-8 w-8 text-blue-600 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <p id="loading-message-text" class="text-lg font-semibold">Generating adaptive content...</p>
+                        <p class="text-sm text-gray-500">The AI tutor is customizing your next lesson.</p>
+                    </div>
+                    
+                    <!-- New TTS/Read Aloud Controls -->
+                    <div id="tts-controls" class="mt-4 p-3 bg-gray-50 rounded-lg flex items-center space-x-3 border">
+                        <button id="read-aloud-btn" class="py-2 px-3 bg-purple-600 text-white font-bold rounded-lg shadow-md hover:bg-purple-700 transition duration-150 disabled:bg-purple-300 flex items-center text-sm" disabled>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 mr-1"><path fill-rule="evenodd" d="M9.383 3.076A1.5 1.5 0 008 4.25v11.5c0 .66.864 1.076 1.383.776l5.76-3.456A1.5 1.5 0 0017 12V8c0-.66-.864-1.076-1.383-.776l-5.76-3.456z" clip-rule="evenodd" /></svg>
+                            Read Aloud
+                        </button>
+                        <audio id="lesson-audio" controls class="hidden w-full"></audio>
+                    </div>
+                </section>
+
+                <!-- Code Editor & Console Panel -->
+                <section class="bg-white p-6 rounded-xl shadow-lg flex flex-col">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2 border-gray-200">Your Code</h2>
+
+                    <textarea id="code-editor" class="flex-1 font-mono text-sm p-3 bg-gray-100 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 resize-none mb-4 custom-scrollbar" placeholder="# Write your Python code here..." disabled></textarea>
+
+                    <h3 class="text-lg font-semibold text-gray-700 mb-2">Console Output / AI Feedback</h3>
+                    <pre id="console-output" class="h-32 bg-gray-800 text-green-400 p-3 rounded-lg overflow-y-auto font-mono text-xs mb-4 custom-scrollbar">-- Console Ready --</pre>
+
+                    <div class="flex space-x-3">
+                        <button id="run-code-btn" class="flex-1 py-3 px-4 bg-green-600 text-white font-bold rounded-xl shadow-md hover:bg-green-700 transition duration-150 disabled:bg-green-300 flex items-center justify-center" disabled>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" /></svg>
+                            Run Code (Simulated)
+                        </button>
+                        <button id="submit-btn" class="flex-1 py-3 px-4 bg-blue-600 text-white font-bold rounded-xl shadow-md hover:bg-blue-700 transition duration-150 disabled:bg-blue-300 flex items-center justify-center" disabled>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
+                            Submit Answer
+                        </button>
+                        <button id="hint-btn" class="py-3 px-4 bg-yellow-500 text-gray-900 font-bold rounded-xl shadow-md hover:bg-yellow-600 transition duration-150 disabled:bg-yellow-300 flex items-center justify-center" disabled>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.868.441l-2.157 3.651l-1.571-1.571a1 1 0 10-1.414 1.414l2.258 2.258a1 1 0 001.542-.142l2.671-4.254A1 1 0 0010 7z" clip-rule="evenodd" /></svg>
+                        </button>
+                    </div>
+                </section>
+            </div>
+            
+            <!-- AI Mentor/Message Box -->
+            <div id="ai-mentor-box" class="bg-blue-100 border-l-4 border-blue-500 text-blue-800 p-4 mt-4 rounded-lg shadow-inner">
+                <p class="font-bold">AI Mentor:</p>
+                <p id="mentor-message">Welcome! I am your adaptive Python tutor. Authentic learning requires persistence, so the actual execution environment is simulated and all feedback is dynamically generated. Let's start with Phase 1: The Basics.</p>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal for Dynamic Prompts (e.g., Specialization) -->
+    <div id="prompt-modal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-75 z-50 flex items-center justify-center">
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-lg">
+            <h3 id="modal-title" class="text-2xl font-bold text-blue-800 mb-4">What are your interests?</h3>
+            <p id="modal-description" class="text-gray-600 mb-6">Enter a topic (e.g., Gaming, Finance, Data Science) so the AI can tailor your learning path and future projects.</p>
+            <textarea id="modal-input" class="w-full h-24 p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 resize-none mb-4"></textarea>
+            <div class="flex justify-end">
+                <button id="modal-submit" class="py-2 px-4 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition duration-150">Submit & Continue</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="/main.js"></script>
+  </body>
+</html>
